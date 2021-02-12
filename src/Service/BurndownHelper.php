@@ -30,6 +30,7 @@ class BurndownHelper
             'backgroundColor' => 'rgba(192,85,75,0.5)',
             'borderColor'     => 'rgb(192,85,75)',
             'borderWidth'     => 2,
+            'pointRadius'     => 0,
             'data'            => [],
         ];
         $zeroPoints = [
