@@ -70,7 +70,7 @@ class BurndownHelper
 
         $diffDays = $endDate->diff($startDate)->days;
         $chartLabels = [];
-        $now = new \DateTime();
+        $now = (new \DateTime())->setTime(23, 59);
         $increment = 0;
         $rincrement = $diffDays;
         for ($dayOfSprint = $startDate; $dayOfSprint <= $endDate; $dayOfSprint->modify('+1 day')) {
@@ -89,6 +89,7 @@ class BurndownHelper
                 'y' => $rincrement * $initialPoints / $diffDays,
             ];
             $zeroPoints['data'][] = ['x' => $dayOfSprint->format('Y-m-d'), 'y' => 0];
+            dump($dayOfSprint, $now, $dayOfSprint <= $now);
             $realPoints['data'][] = ($dayOfSprint <= $now)
                 ? [
                     'x' => $dayOfSprint->format('Y-m-d'),
