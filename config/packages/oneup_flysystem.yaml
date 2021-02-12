@@ -1,0 +1,10 @@
+# Read the documentation: https://github.com/1up-lab/OneupFlysystemBundle/tree/master/Resources/doc/index.md
+oneup_flysystem:
+    adapters:
+        jira_adapter:
+            local:
+                directory: '%env(resolve:JIRA_CACHE_DIR)%'
+    filesystems:
+        jira_filesystem:
+            adapter: jira_adapter
+            alias: League\Flysystem\Filesystem

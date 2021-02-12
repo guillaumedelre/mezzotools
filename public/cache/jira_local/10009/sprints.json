@@ -1,0 +1,12 @@
+[
+    {
+        "id": 9,
+        "self": "https:\/\/francemm.atlassian.net\/rest\/agile\/1.0\/sprint\/9",
+        "state": "active",
+        "name": "Faux sprint",
+        "startDate": "2021-01-25T10:52:18.466Z",
+        "endDate": "2021-02-08T10:52:10.000Z",
+        "originBoardId": 10,
+        "goal": ""
+    }
+]

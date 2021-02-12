@@ -1,0 +1,179 @@
+{% extends 'base.html.twig' %}
+
+{% block reaload %}
+    <meta http-equiv="Refresh" content="120;">
+{% endblock %}
+
+{% block body %}
+    <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="{{ project.avatarUrls['48x48'] }}" width="48" height="48"
+                     class="rounded d-inline-block align-top align-middle" alt="{{ project.name }}">
+            </a>
+            <ul class="navbar-nav mx-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        {{ project.name }}
+                    </a>
+                    <ul id="projectDropdown" class="dropdown-menu dropdown-menu-dark">
+                        <li class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        {{ sprint.name }}
+                    </a>
+                    <ul id="sprintDropdown" class="dropdown-menu dropdown-menu-dark">
+                        <li class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <span class="navbar-text">
+            {% if sprint.goal %}
+                <i data-feather="award"></i>
+                <span class="ml-1">{{ sprint.goal }}</span>
+            {% endif %}
+            </span>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-5">
+        <div class="position-relative mx-auto" style="height:40vh; width:95vw">
+            <canvas id="burndownChart"></canvas>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        var ctx = document.getElementById('burndownChart').getContext('2d');
+        var options = {
+            type: 'bar',
+            data: {
+                labels: {{ burndown.labels|json_encode|raw }},
+                datasets: [
+                    {{ burndown.datasets.real|json_encode|raw }},
+                    {{ burndown.datasets.ideal|json_encode|raw }},
+                    {{ burndown.datasets.daily|json_encode|raw }},
+                    {{ burndown.datasets.zero|json_encode|raw }},
+                ]
+            },
+            options: {
+                responsive: true,
+                legend: {
+                    display: true,
+                    labels: {
+                        fontSize: 20,
+                        fontColor: 'white',
+                        filter: function(item, chart) {
+                            return !item.text.includes('zero');
+                        }
+                    }
+                },
+                hover: {
+                    animationDuration: 1
+                },
+                animation: {
+                    duration: 1,
+                    onComplete: function () {
+                        var ctx = this.chart.ctx
+                        ctx.font = "30px Roboto"
+                        ctx.textAlign = "center"
+                        ctx.fillStyle = "rgb(111,171,53)"
+                        ctx.textBaseline = "bottom"
+
+                        var dataset = this.data.datasets[2];
+                        var meta = this.chart.controller.getDatasetMeta(2);
+
+                        meta.data.forEach(function (bar, index) {
+                            var data = dataset.data[index].y;
+                            if (data !== 0) {
+                                ctx.fillText(data, bar._model.x, bar._model.y - 5)
+                            }
+                        })
+                    }
+                },
+                maintainAspectRatio: true,
+                scales: {
+                    yAxes: [{
+                        id: 'normal_axis',
+                        ticks: {
+                            fontColor: 'white',
+                            fontSize: 18,
+                        },
+                        stacked: false,
+                        gridLines: {
+                            beginAtZero: true,
+                            zeroLineWidth: 2.5,
+                            color: 'rgb(255,255,255,0.2)',
+                        }
+                    },{
+                        id: 'stacked_axis',
+                        ticks: {
+                            min: -50,
+                            max: 150,
+                            fontColor: 'white',
+                            fontSize: 18,
+                        },
+                        stacked: true,
+                        display: false,
+                    }],
+                    xAxes: [{
+                        type: 'time',
+                        distribution: 'series',
+                        time: {
+                            parser: 'YYYY-MM-DD',
+                            unit: 'day',
+                            displayFormats: {
+                                day: 'DD/MM/YYYY',
+                            }
+                        },
+                        ticks: {
+                            fontSize: 18,
+                            maxRotation: 50,
+                            minRotation: 50,
+                            fontColor: 'white',
+                        },
+                        gridLines: {
+                            zeroLineWidth: 2.5,
+                            color: 'rgba(255,255,255,0.2)'
+                        }
+                    }]
+                }
+            }
+        };
+
+        new Chart(ctx, options);
+        window.onblur = function () {
+            document.location.reload(true);
+        }
+
+        fetch('{{ projectsListUrl }}')
+            .then(function (response) {
+                return response.text()
+            }).then(function (html) {
+            document.getElementById('projectDropdown').innerHTML = html
+        })
+
+        fetch('{{ sprintstListUrl }}')
+            .then(function (response) {
+                return response.text()
+            }).then(function (html) {
+                document.getElementById('sprintDropdown').innerHTML = html
+            })
+
+
+    </script>
+{% endblock %}

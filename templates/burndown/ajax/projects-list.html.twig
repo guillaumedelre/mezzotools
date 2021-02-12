@@ -1,0 +1,5 @@
+{% for _project in projects %}
+    <li>
+         <a class="dropdown-item {{ _project.id == project.id ? 'active' : '' }}" href="{{ burndown_project_url(_project) }}">{{ _project.name }}</a>
+    </li>
+{% endfor %}

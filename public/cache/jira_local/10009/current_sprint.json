@@ -1,0 +1,15 @@
+{
+    "id": 9,
+    "start": "25012021105246",
+    "end": "08022021105200",
+    "name": "Faux sprint",
+    "closed": false,
+    "editable": true,
+    "projects": [
+        {
+            "key": "MIGROO",
+            "name": "Infomigrants V0"
+        }
+    ],
+    "viewBoardsUrl": "https:\/\/francemm.atlassian.net\/secure\/GHGoToBoard.jspa?sprintId=9"
+}

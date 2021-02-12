@@ -1,0 +1,15 @@
+{
+    "id": 31,
+    "start": "09022021142908",
+    "end": "22022021142900",
+    "name": "MZ-0902-2202-S108",
+    "closed": false,
+    "editable": true,
+    "projects": [
+        {
+            "key": "MEZZO",
+            "name": "MEZZO"
+        }
+    ],
+    "viewBoardsUrl": "https:\/\/francemm.atlassian.net\/secure\/GHGoToBoard.jspa?sprintId=31"
+}

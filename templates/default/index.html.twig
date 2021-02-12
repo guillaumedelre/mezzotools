@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container">
+        <div class="row mt-1 row-cols-1 row-cols-md-2 g-4">
+            {% for project in projects %}
+                <div class="col">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-2">
+                                    <img src="{{ project.avatarUrls['48x48'] }}" width="48" height="48" class="rounded" alt="{{ project.name }}">
+                                </div>
+                                <div class="col">
+                                    <a href="{{ burndown_project_url(project) }}" class="text-decoration-none link-dark stretched-link">
+                                        <h5 class="card-title mt-3">
+                                            {{ project.name }}
+                                        </h5>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,5 @@
+{% for _sprint in sprints %}
+    <li>
+         <a class="dropdown-item {{ _sprint.id == sprint.id ? 'active' : '' }}" href="{{ burndown_sprint_url(project, _sprint) }}">{{ _sprint.name }}</a>
+    </li>
+{% endfor %}
