@@ -70,7 +70,7 @@ class BurndownHelper
 
         $diffDays = $endDate->diff($startDate)->days;
         $chartLabels = [];
-        $now = (new \DateTime())->setTime(23, 59)->setTimezone(new \DateTimeZone('GMT'));
+        $now = (new \DateTime())->setTimezone(new \DateTimeZone('+00:00'))->setTime(23, 59, 59);
         $increment = 0;
         $rincrement = $diffDays;
         for ($dayOfSprint = $startDate; $dayOfSprint <= $endDate; $dayOfSprint->modify('+1 day')) {
