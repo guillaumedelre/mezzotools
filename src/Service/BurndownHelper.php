@@ -68,12 +68,15 @@ class BurndownHelper
             'data'            => [],
         ];
 
-        $diffDays = $endDate->diff($startDate)->days;
+
+        $diffDays=self::countWorkedDaysBetween($startDate, $endDate);
+
         $chartLabels = [];
         $now = (new \DateTime())->setTimezone(new \DateTimeZone('+00:00'))->setTime(23, 59, 59);
         $increment = 0;
         $rincrement = $diffDays;
-        for ($dayOfSprint = $startDate; $dayOfSprint <= $endDate; $dayOfSprint->modify('+1 day')) {
+        for ($dayOfSprint = clone $startDate; $dayOfSprint <= clone $endDate->setTime(23, 59, 59); $dayOfSprint->modify('+1 day')) {
+            if (!self::isWorked($dayOfSprint)) continue;
             $chartLabels[] = $dayOfSprint->format('Y-m-d');
             $pointsForTheDay = 0;
             array_map(
@@ -112,6 +115,7 @@ class BurndownHelper
         ];
     }
 
+
     public static function resolveSprint(Request $request, array $sprints): array
     {
         $selectedSprint = [];
@@ -142,31 +146,39 @@ class BurndownHelper
         return $selectedProject;
     }
 
-    private static function isWorked(int $timestamp): bool
+    private static function countWorkedDaysBetween(\DateTime $startDate, \DateTime $endDate): int
     {
-        $year = date('Y');
-        $easterDate = easter_date($year);
-        $daysOff = [];
-        $daysOff[] = date("Y-m-d", strtotime("+1 day", $easterDate));// Paques
-        $daysOff[] = date("Y-m-d", strtotime("+39 day", $easterDate)); // Ascenssion
-        $daysOff[] = date("Y-m-d", strtotime("+50 day", $easterDate));// Pentecotes
-        $daysOff[] = date("Y-m-d", strtotime($year . "-01-01"));// 1er janvier
-        $daysOff[] = date("Y-m-d", strtotime($year . "-05-01"));// Fete du travail
-        $daysOff[] = date("Y-m-d", strtotime($year . "-05-08"));// Victoire des allies
-        $daysOff[] = date("Y-m-d", strtotime($year . "-07-14"));// Fete nationale
-        $daysOff[] = date("Y-m-d", strtotime($year . "-08-15"));// Assomption
-        $daysOff[] = date("Y-m-d", strtotime($year . "-11-01"));// Toussaint
-        $daysOff[] = date("Y-m-d", strtotime($year . "-11-11"));// Armistice
-        $daysOff[] = date("Y-m-d", strtotime($year . "-12-25"));// Noel
-
-        if (date('w', $timestamp) == 6 || date('w', $timestamp) == 0) {
-            // Weekend
-            return false;
-        } elseif (in_array(date("Y-m-d", $timestamp), $daysOff)) {
-            // Férié
-            return false;
-        } else {
-            return true;
+        $nbDays = 0;
+        for ($dayOfSprint = clone $startDate; $dayOfSprint <= clone $endDate; $dayOfSprint->modify('+1 day')) {
+            if (!self::isWorked($dayOfSprint)) {
+                continue;
+            }
+            $nbDays++;
         }
+        return $nbDays;
+    }
+
+    private static function isWorked(\DateTime $dayOfSprint): bool
+    {
+        $easterDate = \DateTime::createFromFormat('U', easter_date($dayOfSprint->format('Y')), new \DateTimeZone('+00:00'));
+        $daysOff = [];
+        $daysOff[] = \DateTime::createFromFormat('U', strtotime("+1 day", $easterDate->getTimestamp()))->format('Y-m-d');// Paques
+        $daysOff[] = \DateTime::createFromFormat('U', strtotime("+39 day", $easterDate->getTimestamp()))->format('Y-m-d'); // Ascenssion
+        $daysOff[] = \DateTime::createFromFormat('U', strtotime("+50 day", $easterDate->getTimestamp()))->format('Y-m-d');// Pentecotes
+        $daysOff[] = $dayOfSprint->format('Y') . "-01-01";// 1er janvier
+        $daysOff[] = $dayOfSprint->format('Y') . "-05-01";// Fete du travail
+        $daysOff[] = $dayOfSprint->format('Y') . "-05-08";// Victoire des allies
+        $daysOff[] = $dayOfSprint->format('Y') . "-07-14";// Fete nationale
+        $daysOff[] = $dayOfSprint->format('Y') . "-08-15";// Assomption
+        $daysOff[] = $dayOfSprint->format('Y') . "-11-01";// Toussaint
+        $daysOff[] = $dayOfSprint->format('Y') . "-11-11";// Armistice
+        $daysOff[] = $dayOfSprint->format('Y') . "-12-25";// Noel
+        if (
+            ($dayOfSprint->format('w') == 6 || $dayOfSprint->format('w') == 0) // Weekend
+            || in_array($dayOfSprint->format('Y-m-d'), $daysOff) // férié
+        ) {
+            return false;
+        }
+        return true;
     }
 }
