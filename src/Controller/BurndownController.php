@@ -6,7 +6,6 @@ use App\Service\BurndownHelper;
 use App\Service\CacheLoader;
 use App\Service\JiraClient;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\RouterInterface;
@@ -37,9 +36,9 @@ class BurndownController extends AbstractController
     /**
      * @Route("/{projectId}/projects-list", name="burndown_projects_list")
      */
-    public function projectsList(Request $request, string $projectId): Response
+    public function projectsList(string $projectId): Response
     {
-        $selectedProject = BurndownHelper::resolveProject($request, $this->jiraCache->getProjectList());
+        $selectedProject = BurndownHelper::resolveProject($projectId, $this->jiraCache->getProjectList());
 
         return $this->render(
             'burndown/ajax/projects-list.html.twig',
@@ -53,10 +52,10 @@ class BurndownController extends AbstractController
     /**
      * @Route("/{projectId}/{sprintId}/sprints-list", name="burndown_sprints_list")
      */
-    public function sprintstList(Request $request, string $projectId, string $sprintId): Response
+    public function sprintstList(string $projectId, string $sprintId): Response
     {
-        $selectedProject = BurndownHelper::resolveProject($request, $this->jiraCache->getProjectList());
-        $selectedSprint = BurndownHelper::resolveSprint($request, $this->jiraCache->getSprintList($selectedProject['id']));
+        $selectedProject = BurndownHelper::resolveProject($projectId, $this->jiraCache->getProjectList());
+        $selectedSprint = BurndownHelper::resolveSprint((int) $sprintId, $this->jiraCache->getSprintList($selectedProject['id']));
 
         return $this->render(
             'burndown/ajax/sprints-list.html.twig',
@@ -72,9 +71,10 @@ class BurndownController extends AbstractController
     /**
      * @Route("/{projectId}/current", name="current")
      */
-    public function current(Request $request, string $projectId): Response
+    public function current(string $projectId): Response
     {
         $currentSprint = $this->jiraCache->getCurrentSprint($projectId);
+
         return $this->redirectToRoute('burndown', ['projectId'=>$projectId,'sprintId'=>$currentSprint['id']]);
     }
 
@@ -82,10 +82,10 @@ class BurndownController extends AbstractController
 
      * @Route("/{projectId}/{sprintId}", name="burndown")
      */
-    public function burndown(Request $request, string $projectId, string $sprintId): Response
+    public function burndown(string $projectId, string $sprintId): Response
     {
-        $selectedProject = BurndownHelper::resolveProject($request, $this->jiraCache->getProjectList());
-        $selectedSprint = BurndownHelper::resolveSprint($request, $this->jiraCache->getSprintList($selectedProject['id']));
+        $selectedProject = BurndownHelper::resolveProject($projectId, $this->jiraCache->getProjectList());
+        $selectedSprint = BurndownHelper::resolveSprint((int) $sprintId, $this->jiraCache->getSprintList($selectedProject['id']));
 
         $startDate = \DateTime::createFromFormat('U', strtotime($selectedSprint['startDate']));
         $endDate = \DateTime::createFromFormat('U', strtotime($selectedSprint['endDate']));
