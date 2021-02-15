@@ -115,7 +115,6 @@ class BurndownHelper
         ];
     }
 
-
     public static function resolveSprint(Request $request, array $sprints): array
     {
         $selectedSprint = [];

@@ -70,6 +70,16 @@ class BurndownController extends AbstractController
     }
 
     /**
+     * @Route("/{projectId}/current", name="current")
+     */
+    public function current(Request $request, string $projectId): Response
+    {
+        $currentSprint = $this->jiraCache->getCurrentSprint($projectId);
+        return $this->redirectToRoute('burndown', ['projectId'=>$projectId,'sprintId'=>$currentSprint['id']]);
+    }
+
+    /**
+
      * @Route("/{projectId}/{sprintId}", name="burndown")
      */
     public function burndown(Request $request, string $projectId, string $sprintId): Response
