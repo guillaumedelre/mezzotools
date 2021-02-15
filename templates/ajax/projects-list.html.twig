@@ -1,4 +1,4 @@
-{% for _project in projects %}
+{% for _project in projects|filter(v => burndown_project_url(v)|trim('#') is not empty) %}
     <li>
          <a class="dropdown-item {{ _project.id == project.id ? 'active' : '' }}" href="{{ burndown_project_url(_project) }}">{{ _project.name }}</a>
     </li>

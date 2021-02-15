@@ -28,7 +28,7 @@ class BurndownExtension extends AbstractExtension
 
     public function burndownSprintUrl(array $project, array $sprint): string
     {
-        return $this->router->generate('burndown', ['projectId' => $project['id'], 'sprintId' => $sprint['id']]);
+        return $this->router->generate('project_burndown_for_sprint', ['projectName' => urlencode($project['name']), 'sprintName' => urlencode($sprint['name'])]);
     }
 
     public function burndownProjectUrl(array $project, ?array $sprint = null): string
@@ -36,6 +36,6 @@ class BurndownExtension extends AbstractExtension
         $currentSprint = $sprint ?: $this->jiraCache->getCurrentSprint($project['id']);
         return empty($currentSprint)
             ? '#'
-            : $this->router->generate('burndown', ['projectId' => $project['id'], 'sprintId' => $currentSprint['id']]);
+            : $this->router->generate('project_burndown_for_sprint', ['projectName' => urlencode($project['name']), 'sprintName' => urlencode($currentSprint['name'])]);
     }
 }

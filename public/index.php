@@ -15,6 +15,8 @@ if ($_SERVER['APP_DEBUG']) {
     Debug::enable();
 }
 
+$_SERVER['APP_ENV']  = $_SERVER['HTTP_APP_ENV'] ?? $_SERVER['APP_ENV'];
+
 $kernel = new Kernel($_SERVER['APP_ENV'], (bool) $_SERVER['APP_DEBUG']);
 $request = Request::createFromGlobals();
 $response = $kernel->handle($request);
