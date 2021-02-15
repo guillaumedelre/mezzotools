@@ -14,7 +14,8 @@ class BurndownHelper
         array $initialIssuesForSprint,
         array $doneStatuses,
         JiraClient $jiraClient
-    ): array {
+    ): array
+    {
         $initialPoints = 0;
         array_map(
             function (array $issue) use (&$initialPoints, $startDate) {
@@ -23,53 +24,53 @@ class BurndownHelper
         );
 
         $idealPoints = [
-            'type'            => 'line',
-            'label'           => 'Ideal burndown',
-            'yAxisID'         => 'normal_axis',
-            'fill'            => false,
+            'type' => 'line',
+            'label' => 'Ideal burndown',
+            'yAxisID' => 'normal_axis',
+            'fill' => false,
             'backgroundColor' => 'rgba(192,85,75,0.5)',
-            'borderColor'     => 'rgb(192,85,75)',
-            'borderWidth'     => 2,
-            'pointRadius'     => 0,
-            'data'            => [],
+            'borderColor' => 'rgb(192,85,75)',
+            'borderWidth' => 2,
+            'pointRadius' => 0,
+            'data' => [],
         ];
         $zeroPoints = [
-            'type'        => 'line',
-            'label'       => 'zero',
-            'yAxisID'     => 'normal_axis',
-            'fill'        => false,
-            'legend'      => [
+            'type' => 'line',
+            'label' => 'zero',
+            'yAxisID' => 'normal_axis',
+            'fill' => false,
+            'legend' => [
                 'display' => false,
                 'enabled' => false,
             ],
             'borderColor' => 'rgb(255,255,255)',
             'borderWidth' => 1,
             'pointRadius' => 0,
-            'data'        => [],
+            'data' => [],
         ];
         $realPoints = [
-            'type'            => 'line',
-            'label'           => 'Burndown',
-            'yAxisID'         => 'normal_axis',
-            'fill'            => false,
+            'type' => 'line',
+            'label' => 'Burndown',
+            'yAxisID' => 'normal_axis',
+            'fill' => false,
             'backgroundColor' => 'rgba(27,156,215,0.5)',
-            'borderColor'     => 'rgb(27,156,215)',
-            'borderWidth'     => 3,
-            'lineTension'     => .1,
-            'data'            => [],
+            'borderColor' => 'rgb(27,156,215)',
+            'borderWidth' => 3,
+            'lineTension' => .1,
+            'data' => [],
         ];
         $dailyPoints = [
-            'type'            => 'bar',
-            'label'           => 'Done',
-            'yAxisID'         => 'normal_axis',
+            'type' => 'bar',
+            'label' => 'Done',
+            'yAxisID' => 'normal_axis',
             'backgroundColor' => 'rgba(111,171,53,0.5)',
-            'borderColor'     => 'rgb(111,171,53)',
-            'borderWidth'     => 2,
-            'data'            => [],
+            'borderColor' => 'rgb(111,171,53)',
+            'borderWidth' => 2,
+            'data' => [],
         ];
 
 
-        $diffDays=self::countWorkedDaysBetween($startDate, $endDate);
+        $diffDays = self::countWorkedDaysBetween($startDate, $endDate);
 
         $chartLabels = [];
         $now = (new \DateTime())->setTimezone(new \DateTimeZone('+00:00'))->setTime(23, 59, 59);
@@ -105,23 +106,23 @@ class BurndownHelper
         }
 
         return [
-            'labels'   => $chartLabels,
+            'labels' => $chartLabels,
             'datasets' => [
                 'ideal' => $idealPoints,
                 'daily' => $dailyPoints,
-                'real'  => $realPoints,
-                'zero'  => $zeroPoints,
+                'real' => $realPoints,
+                'zero' => $zeroPoints,
             ],
         ];
     }
 
-    public static function resolveSprint(Request $request, array $sprints): array
+    public static function resolveSprint(int $sprintId, array $sprints): array
     {
         $selectedSprint = [];
         array_map(
-            function (array $sprintItem) use (&$selectedSprint, $request) {
+            function (array $sprintItem) use (&$selectedSprint, $sprintId) {
                 $sprints[] = $sprintItem;
-                if ((int)$request->attributes->get('sprintId') === $sprintItem['id']) {
+                if ($sprintId === $sprintItem['id']) {
                     $selectedSprint = $sprintItem;
                 }
             }, $sprints
@@ -130,13 +131,13 @@ class BurndownHelper
         return $selectedSprint;
     }
 
-    public static function resolveProject(Request $request, array $projects): array
+    public static function resolveProject(string $projectId, array $projects): array
     {
         $selectedProject = [];
         array_map(
-            function (array $projectItem) use (&$selectedProject, $request) {
+            function (array $projectItem) use (&$selectedProject, $projectId) {
                 $projects[] = $projectItem;
-                if ($request->attributes->get('projectId') === $projectItem['id']) {
+                if ($projectId === $projectItem['id']) {
                     $selectedProject = $projectItem;
                 }
             }, $projects
@@ -154,6 +155,7 @@ class BurndownHelper
             }
             $nbDays++;
         }
+
         return $nbDays;
     }
 
@@ -178,6 +180,7 @@ class BurndownHelper
         ) {
             return false;
         }
+
         return true;
     }
 }
