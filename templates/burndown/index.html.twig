@@ -39,12 +39,7 @@
                     </ul>
                 </li>
             </ul>
-            <span class="navbar-text">
-            {% if sprint.goal is defined and sprint.goal is not empty %}
-                <i data-feather="award"></i>
-                <span class="ml-1">{{ sprint.goal }}</span>
-            {% endif %}
-            </span>
+            <span class="navbar-text"></span>
         </div>
     </nav>
 
@@ -53,6 +48,14 @@
             <canvas id="burndownChart"></canvas>
         </div>
     </div>
+
+    {% if sprint.goal is defined and sprint.goal is not empty %}
+    <div class="container-fluid fixed-bottom text-center">
+        <h1 class="h6 text-light mb-5">
+            <i data-feather="award"></i><span class="ml-1">{{ sprint.goal }}</span><i data-feather="award"></i>
+        </h1>
+    </div>
+    {% endif %}
 {% endblock %}
 
 {% block javascripts %}

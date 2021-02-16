@@ -2,7 +2,11 @@
 
 namespace App\Twig;
 
+use App\Model\JiraCurrentSprint;
+use App\Model\JiraProject;
+use App\Model\JiraSprint;
 use App\Service\CacheLoader;
+use League\Flysystem\FileNotFoundException;
 use Symfony\Component\Routing\RouterInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
@@ -26,16 +30,38 @@ class BurndownExtension extends AbstractExtension
         ];
     }
 
-    public function burndownSprintUrl(array $project, array $sprint): string
+    /**
+     * @param JiraSprint|JiraCurrentSprint $sprint
+     */
+    public function burndownSprintUrl(JiraProject $project, $sprint): string
     {
-        return $this->router->generate('project_burndown_for_sprint', ['projectName' => urlencode($project['name']), 'sprintName' => urlencode($sprint['name'])]);
+        return $this->router->generate(
+            'project_burndown_for_sprint',
+            [
+                'projectName' => urlencode($project->getName()),
+                'sprintName'  => urlencode($sprint->getName()),
+            ]
+        );
     }
 
-    public function burndownProjectUrl(array $project, ?array $sprint = null): string
+    /**
+     * @param JiraProject                  $project
+     * @param JiraSprint|JiraCurrentSprint $sprint
+     *
+     * @throws FileNotFoundException
+     */
+    public function burndownProjectUrl(JiraProject $project, $sprint = null): string
     {
-        $currentSprint = $sprint ?: $this->jiraCache->getCurrentSprint($project['id']);
+        $currentSprint = $sprint ?: $this->jiraCache->getCurrentSprint($project->getId());
+
         return empty($currentSprint)
             ? '#'
-            : $this->router->generate('project_burndown_for_sprint', ['projectName' => urlencode($project['name']), 'sprintName' => urlencode($currentSprint['name'])]);
+            : $this->router->generate(
+                'project_burndown_for_sprint',
+                [
+                    'projectName' => urlencode($project->getName()),
+                    'sprintName'  => urlencode($currentSprint->getName()),
+                ]
+            );
     }
 }
