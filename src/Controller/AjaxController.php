@@ -2,11 +2,13 @@
 
 namespace App\Controller;
 
-use App\Service\BurndownHelper;
 use App\Service\CacheLoader;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Model\JiraProject;
+use App\Model\JiraSprint;
 
 /**
  * @Route("/ajax", name="ajax_")
@@ -21,38 +23,34 @@ class AjaxController extends AbstractController
     }
 
     /**
-     * @Route("/{projectId}/projects", name="projects_list")
+     * @Route("/{projectName}/projects", name="projects_list")
+     * @ParamConverter("projectName", class=JiraProject::class, isOptional=false)
      */
-    public function projectsList(string $projectId): Response
+    public function projectsList(JiraProject $resolvedProject): Response
     {
-        $selectedProject = BurndownHelper::resolveProject($projectId, $this->jiraCache->getProjectList());
-
         return $this->render(
             'ajax/projects-list.html.twig',
             [
                 'projects' => $this->jiraCache->getProjectList(),
-                'project'  => $selectedProject,
+                'project'  => $resolvedProject,
             ]
         );
     }
 
     /**
-     * @Route("/{projectId}/{sprintId}/sprints-list", name="sprints_list")
+     * @Route("/{projectName}/{sprintName}/sprints", name="sprints_list")
+     * @ParamConverter("projectName", class=JiraProject::class, isOptional=false)
+     * @ParamConverter("sprintName", class=JiraSprint::class, isOptional=false)
      */
-    public function sprintstList(string $projectId, string $sprintId): Response
+    public function sprintstList(JiraProject $resolvedProject, JiraSprint $resolvedSprint): Response
     {
-        $selectedProject = BurndownHelper::resolveProject($projectId, $this->jiraCache->getProjectList());
-        $selectedSprint = BurndownHelper::resolveSprint(
-            (int)$sprintId, $this->jiraCache->getSprintList($selectedProject['id'])
-        );
-
         return $this->render(
             'ajax/sprints-list.html.twig',
             [
-                'project'  => $selectedProject,
+                'project'  => $resolvedProject,
                 'projects' => $this->jiraCache->getProjectList(),
-                'sprint'   => $selectedSprint,
-                'sprints'  => $this->jiraCache->getSprintList($selectedProject['id']),
+                'sprint'   => $resolvedSprint,
+                'sprints'  => $this->jiraCache->getSprintList($resolvedProject->getId()),
             ]
         );
     }

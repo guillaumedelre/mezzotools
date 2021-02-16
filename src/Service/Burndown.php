@@ -2,26 +2,44 @@
 
 namespace App\Service;
 
-use Symfony\Component\HttpFoundation\Request;
+use App\Model\JiraCurrentSprint;
+use App\Model\JiraProject;
+use App\Model\JiraSprint;
 
-class BurndownHelper
+class Burndown
 {
-    public static function computeBurndown(
-        array $selectedProject,
-        array $selectedSprint,
-        \DateTime $startDate,
-        \DateTime $endDate,
-        array $initialIssuesForSprint,
-        array $doneStatuses,
-        JiraClient $jiraClient
-    ): array
+    protected JiraClient $jiraClient;
+    protected int $initialPoints = 0;
+    private \DateTime $startDate;
+    private \DateTime $endDate;
+    private CacheLoader $jiraCache;
+    private array $doneStatuses;
+
+    public function __construct(JiraClient $jiraClient, CacheLoader $jiraCache)
     {
-        $initialPoints = 0;
-        array_map(
-            function (array $issue) use (&$initialPoints, $startDate) {
-                $initialPoints += $issue['fields']['customfield_10028'] ?: 0;
-            }, $initialIssuesForSprint
-        );
+        $this->jiraClient = $jiraClient;
+        $this->jiraCache = $jiraCache;
+        $this->doneStatuses = $this->jiraCache->getDoneStatuses();
+    }
+
+    /**
+     * @param JiraProject $resolvedProject
+     * @param JiraCurrentSprint|JiraSprint $resolvedSprint
+     */
+    public function compute(JiraProject $resolvedProject, $resolvedSprint)
+    {
+        $this->startDate = ($resolvedSprint instanceof JiraCurrentSprint)
+            ? $resolvedSprint->getStart()
+            : $resolvedSprint->getStartDate();
+        $this->endDate = ($resolvedSprint instanceof JiraCurrentSprint)
+            ? $resolvedSprint->getEnd()
+            : $resolvedSprint->getEndDate();
+        $now = (new \DateTime())->setTimezone(new \DateTimeZone('+00:00'))->setTime(23, 59, 59);
+
+        $this->initialPoints = 0;
+        array_map(function (array $issue) use (&$initialPoints) {
+            $this->initialPoints += $issue['fields']['customfield_10028'] ?: 0;
+        }, $this->jiraClient->getInitialIssuesForSprint($resolvedProject->getId(), $resolvedSprint->getName(), $this->startDate));
 
         $idealPoints = [
             'type' => 'line',
@@ -69,38 +87,40 @@ class BurndownHelper
             'data' => [],
         ];
 
-
-        $diffDays = self::countWorkedDaysBetween($startDate, $endDate);
+        $diffDays = self::countWorkedDaysBetween($this->startDate, $this->endDate);
 
         $chartLabels = [];
-        $now = (new \DateTime())->setTimezone(new \DateTimeZone('+00:00'))->setTime(23, 59, 59);
         $increment = 0;
         $rincrement = $diffDays;
-        for ($dayOfSprint = clone $startDate; $dayOfSprint <= clone $endDate->setTime(23, 59, 59); $dayOfSprint->modify('+1 day')) {
-            if (!self::isWorked($dayOfSprint)) continue;
+        for ($dayOfSprint = clone $this->startDate; $dayOfSprint <= clone $this->endDate->setTime(23, 59, 59); $dayOfSprint->modify('+1 day')) {
+            if (!self::isWorked($dayOfSprint)) {
+                continue;
+            }
             $chartLabels[] = $dayOfSprint->format('Y-m-d');
+
             $pointsForTheDay = 0;
-            array_map(
-                function (array $issue) use (&$pointsForTheDay, $dayOfSprint) {
-                    $pointsForTheDay += $issue['fields']['customfield_10028'] ?: 0;
-                }, $jiraClient->getDailyDoneIssues(
-                $selectedProject['id'], $selectedSprint['name'], $dayOfSprint, $doneStatuses
-            )
-            );
+            array_map(function (array $issue) use (&$pointsForTheDay, $dayOfSprint) {
+                $pointsForTheDay += $issue['fields']['customfield_10028'] ?: 0;
+            }, $this->jiraClient->getDailyDoneIssues($resolvedProject->getId(), $resolvedSprint->getName(), $dayOfSprint, $this->doneStatuses));
+
             $dailyPoints['data'][] = ['x' => $dayOfSprint->format('Y-m-d'), 'y' => $pointsForTheDay];
+
             $idealPoints['data'][] = [
                 'x' => $dayOfSprint->format('Y-m-d'),
-                'y' => $rincrement * $initialPoints / $diffDays,
+                'y' => $rincrement * $this->initialPoints / $diffDays,
             ];
+
             $zeroPoints['data'][] = ['x' => $dayOfSprint->format('Y-m-d'), 'y' => 0];
+
             $realPoints['data'][] = ($dayOfSprint <= $now)
                 ? [
                     'x' => $dayOfSprint->format('Y-m-d'),
-                    'y' => (0 === $increment ? $initialPoints : $realPoints['data'][$increment - 1]['y']) - $dailyPoints['data'][$increment]['y'],
+                    'y' => (0 === $increment ? $this->initialPoints : $realPoints['data'][$increment - 1]['y']) - $dailyPoints['data'][$increment]['y'],
                 ] : [
                     'x' => $dayOfSprint->format('Y-m-d'),
                     'y' => null,
                 ];
+
             $increment++;
             $rincrement--;
         }
@@ -114,36 +134,6 @@ class BurndownHelper
                 'zero' => $zeroPoints,
             ],
         ];
-    }
-
-    public static function resolveSprint(int $sprintId, array $sprints): array
-    {
-        $selectedSprint = [];
-        array_map(
-            function (array $sprintItem) use (&$selectedSprint, $sprintId) {
-                $sprints[] = $sprintItem;
-                if ($sprintId === $sprintItem['id']) {
-                    $selectedSprint = $sprintItem;
-                }
-            }, $sprints
-        );
-
-        return $selectedSprint;
-    }
-
-    public static function resolveProject(string $projectId, array $projects): array
-    {
-        $selectedProject = [];
-        array_map(
-            function (array $projectItem) use (&$selectedProject, $projectId) {
-                $projects[] = $projectItem;
-                if ($projectId === $projectItem['id']) {
-                    $selectedProject = $projectItem;
-                }
-            }, $projects
-        );
-
-        return $selectedProject;
     }
 
     private static function countWorkedDaysBetween(\DateTime $startDate, \DateTime $endDate): int

@@ -28,15 +28,14 @@ class SprintParamConverter implements ParamConverterInterface
         }
 
         $found = array_filter(
-            $this->cacheLoader->getSprintList($request->attributes->get('resolvedProject')['id']),
-            function (array $sprint) use ($request, $configuration) {
-                return mb_strtolower($sprint['name']) === mb_strtolower(
-                        $request->attributes->get($configuration->getName())
-                    );
+            $this->cacheLoader->getSprintList($request->attributes->get('resolvedProject')->getId()),
+            function (JiraSprint $sprint) use ($request, $configuration) {
+                return mb_strtolower($sprint->getName()) === mb_strtolower(urldecode($request->attributes->get($configuration->getName())));
             }
         );
 
-        if (false === $resolvedSprint = current(array_values($found))) {
+        $resolvedSprint = current($found);
+        if (empty($resolvedSprint) || empty($resolvedSprint->getName())) {
             return false;
         }
 
