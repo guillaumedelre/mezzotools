@@ -43,7 +43,7 @@ class JiraClient
             '/rest/greenhopper/latest/integration/teamcalendars/sprint/list',
             [
                 'query' => [
-                    'jql' => "project = $projectKey"
+                    'jql' => "project = \"$projectKey\""
                 ]
             ]
         );
@@ -88,7 +88,7 @@ class JiraClient
             '/rest/greenhopper/latest/integration/teamcalendars/sprint/list',
             [
                 'query' => [
-                    'jql' => "project=$projectKey and Sprint not in closedSprints() and sprint not in futureSprints()"
+                    'jql' => "project= \"$projectKey\" and Sprint not in closedSprints() and sprint not in futureSprints()"
                 ]
             ]
         );

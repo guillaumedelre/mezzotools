@@ -40,7 +40,7 @@
                 </li>
             </ul>
             <span class="navbar-text">
-            {% if sprint.goal %}
+            {% if sprint.goal is defined and sprint.goal is not empty %}
                 <i data-feather="award"></i>
                 <span class="ml-1">{{ sprint.goal }}</span>
             {% endif %}
