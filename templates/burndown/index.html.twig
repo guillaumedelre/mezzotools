@@ -44,14 +44,14 @@
     </nav>
 
     <div class="container-fluid">
-        <div class="position-relative mx-auto" style="height:40vh; width:90vw">
+        <div class="position-relative mx-auto" style="height:60vh; width:80vw">
             <canvas id="burndownChart"></canvas>
         </div>
     </div>
 
     {% if sprint.goal is defined and sprint.goal is not empty %}
     <div class="container-fluid fixed-bottom text-center">
-        <h1 class="h6 text-light mb-5">
+        <h1 class="h5 text-light">
             <i data-feather="award"></i><span class="ml-1">{{ sprint.goal }}</span><i data-feather="award"></i>
         </h1>
     </div>
@@ -114,7 +114,7 @@
                         id: 'normal_axis',
                         ticks: {
                             fontColor: 'white',
-                            fontSize: 18,
+                            fontSize: 14,
                         },
                         stacked: false,
                         gridLines: {
@@ -128,7 +128,7 @@
                             min: -50,
                             max: 150,
                             fontColor: 'white',
-                            fontSize: 18,
+                            fontSize: 14,
                         },
                         stacked: true,
                         display: false,
@@ -144,9 +144,9 @@
                             }
                         },
                         ticks: {
-                            fontSize: 18,
-                            maxRotation: 50,
-                            minRotation: 50,
+                            fontSize: 14,
+                            maxRotation: 30,
+                            minRotation: 30,
                             fontColor: 'white',
                         },
                         gridLines: {
