@@ -44,13 +44,13 @@
     </nav>
 
     <div class="container-fluid">
-        <div class="position-relative mx-auto" style="height:60vh; width:80vw">
+        <div class="position-relative maximize-graph">
             <canvas id="burndownChart"></canvas>
         </div>
     </div>
 
     {% if sprint.goal is defined and sprint.goal is not empty %}
-    <div class="container-fluid fixed-bottom text-center">
+    <div class="container-fluid fixed-bottom text-center minimize-goal">
         <h1 class="h5 text-light">
             <i data-feather="award"></i><span class="ml-1">{{ sprint.goal }}</span><i data-feather="award"></i>
         </h1>
@@ -92,7 +92,7 @@
                     duration: 1,
                     onComplete: function () {
                         var ctx = this.chart.ctx
-                        ctx.font = "30px Roboto"
+                        ctx.font = "30px"
                         ctx.textAlign = "center"
                         ctx.fillStyle = "rgb(111,171,53)"
                         ctx.textBaseline = "bottom"
@@ -108,7 +108,7 @@
                         })
                     }
                 },
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 scales: {
                     yAxes: [{
                         id: 'normal_axis',

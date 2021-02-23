@@ -125,6 +125,9 @@ class Burndown
             $rincrement--;
         }
 
+        $zeroPoints['data'][] = ['x' => $dayOfSprint->format('Y-m-d'), 'y' => 0];
+        $chartLabels[] = $dayOfSprint->format('Y-m-d');
+
         return [
             'labels' => $chartLabels,
             'datasets' => [
