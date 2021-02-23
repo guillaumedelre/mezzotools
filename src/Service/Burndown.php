@@ -28,6 +28,17 @@ class Burndown
      */
     public function compute(JiraProject $resolvedProject, $resolvedSprint)
     {
+        if ('future' === $resolvedSprint->getState()) {
+            return [
+                'labels' => [],
+                'datasets' => [
+                    'ideal' => [],
+                    'daily' => [],
+                    'real' => [],
+                    'zero' => [],
+                ],
+            ];
+        }
         $this->startDate = ($resolvedSprint instanceof JiraCurrentSprint)
             ? $resolvedSprint->getStart()
             : $resolvedSprint->getStartDate();
