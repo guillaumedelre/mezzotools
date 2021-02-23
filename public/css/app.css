@@ -1,3 +1,12 @@
 h1 {
     margin-bottom: 80px!important;
 }
+
+.maximize-graph {
+    height: calc( 92vh - 75px);
+    width: 99vw;
+}
+
+.minimize-goal {
+    height: 75px;
+}

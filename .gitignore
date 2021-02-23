@@ -17,3 +17,5 @@
 
 /public/cache/jira_local/*
 !/public/cache/jira_local/.gitignore
+
+.idea
