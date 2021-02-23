@@ -33,7 +33,6 @@ class SprintParamConverter implements ParamConverterInterface
                 return mb_strtolower($sprint->getName()) === mb_strtolower(urldecode($request->attributes->get($configuration->getName())));
             }
         );
-
         $resolvedSprint = current($found);
         if (empty($resolvedSprint) || empty($resolvedSprint->getName())) {
             return false;
